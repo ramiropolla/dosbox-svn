@@ -567,15 +567,21 @@ static Bitu INT12_Handler(void) {
 }
 
 static Bitu INT17_Handler(void) {
+	static FILE *m_pipe;
+
 	LOG(LOG_BIOS,LOG_NORMAL)("INT17:Function %X",reg_ah);
 	switch(reg_ah) {
 	case 0x00:		/* PRINTER: Write Character */
-		reg_ah=1;	/* Report a timeout */
+		if ( m_pipe == NULL )
+			m_pipe = fopen("/dev/lp0", "w");
+		fputc(reg_al, m_pipe);
+		fflush(m_pipe);
+		reg_ah= 0xd0;	/* Report a timeout */
 		break;
 	case 0x01:		/* PRINTER: Initialize port */
 		break;
 	case 0x02:		/* PRINTER: Get Status */
-		reg_ah=0;	
+		reg_ah = 0x90;
 		break;
 	case 0x20:		/* Some sort of printerdriver install check*/
 		break;
